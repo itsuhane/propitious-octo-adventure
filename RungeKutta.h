@@ -12,22 +12,22 @@ public:
         setRK4();
     }
 
-    double integrate(const std::function<V(const S&, const V&)> &f, const V &y0, const S &t0, const S &t1) {
+    V integrate(const std::function<V(const S&, const V&)> &f, const V &y0, const S &t0, const S &t1) {
         size_t s = stageNum();
-        std::vector<V> k(s, 0.0);
+        std::vector<V> k(s);
         S h = t1 - t0;
         V y1 = y0;
         k[0] = f(t0, y0);
         for (size_t i = 1; i < s; ++i) {
             S ti = t0 + h*node(i);
-            V ks = 0;
+            V yi = y0;
             for (size_t j = 0; j < i; ++j) {
                 S c = coefficient(i - 1, j);
                 if (c != 0) {
-                    ks += coefficient(i - 1, j)*k[j];
+                    yi += h*coefficient(i - 1, j)*k[j];
                 }
             }
-            k[i] = f(ti, y0 + h*ks);
+            k[i] = f(ti, yi);
         }
         for (size_t i = 0; i < s; ++i) {
             S w = weight(i);
