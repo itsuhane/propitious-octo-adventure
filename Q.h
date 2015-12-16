@@ -14,6 +14,16 @@ public:
 		return Q(-up, down, false);
 	}
 
+	Q& operator+=(const Q& q) {
+		ZType n = gcd(down, q.down);
+		ZType s1 = q.down / n;
+		ZType s2 = down / n;
+		up = up*s1 + q.up*s2;
+		down = s1*down;
+		simplify();
+		return *this;
+	}
+
 	Q operator+(const Q& q) const {
 		ZType n = gcd(down, q.down);
 		ZType s1 = q.down / n;
@@ -21,14 +31,30 @@ public:
 		return Q(up*s1 + q.up*s2, s1*down);
 	}
 
+	Q& operator-=(const Q& q) {
+		return *this += (-q);
+	}
+
 	Q operator-(const Q& q) const {
 		return *this + (-q);
+	}
+
+	Q& operator*=(const Q& q) {
+		ZType s1 = gcd(std::abs(up), q.down);
+		ZType s2 = gcd(std::abs(q.up), down);
+		up = (up / s1)*(q.up / s2);
+		down = (down / s2)*(q.down / s1);
+		return *this;
 	}
 
 	Q operator*(const Q& q) const {
 		ZType s1 = gcd(std::abs(up), q.down);
 		ZType s2 = gcd(std::abs(q.up), down);
 		return Q((up / s1)*(q.up / s2), (down / s2)*(q.down / s1), false);
+	}
+
+	Q& operator/=(const Q& q) {
+		return *this *= q.invert();
 	}
 
 	Q operator/(const Q& q) const {
@@ -99,6 +125,9 @@ private:
 };
 
 inline std::ostream& operator<<(std::ostream& o, const Q& q) {
-	o << '(' << q.up << '/' << q.down << ')';
+	o << q.up;
+	if (q.down != 1) {
+		o << '/' << q.down;
+	}
 	return o;
 }
