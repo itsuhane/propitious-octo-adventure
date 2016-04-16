@@ -28,8 +28,11 @@ public:
     }
 
     std::vector<int> knn(const point_type &point, int k) {
-        std::vector<value_type> distances(k);
-        return knn(point, k, distances);
+        std::vector<int> indices(k);
+        std::vector<value_type> vpoint(point.begin(), point.end());
+        make_dump(k);
+        flannIndex->knnSearch(vpoint, indices, distances_dump, k, cvflann::SearchParams());
+        return indices;
     }
 
     std::vector<int> knn(const point_type &point, int k, std::vector<value_type> &distances) {
@@ -42,7 +45,12 @@ public:
 
     std::vector<int> knn(const std::vector<point_type> &points, int k) {
         std::vector<value_type> distances(points.size()*k);
-        return knn(points, k, distances);
+        std::vector<int> indices(points.size()*k);
+        cv::Mat points_data((int)points.size(), dimension, cv::DataType<value_type>::type, (void*)points[0].data());
+        cv::Mat indices_data((int)points.size(), k, cv::DataType<int>::type, (void*)indices.data());
+        make_dump(k, points.size());
+        flannIndex->knnSearch(points_data, indices_data, distances_data_dump, k, cvflann::SearchParams());
+        return indices;
     }
 
     std::vector<int> knn(const std::vector<point_type> &points, int k, std::vector<value_type> &distances) {
@@ -55,8 +63,12 @@ public:
     }
 
     std::vector<int> rnn(const point_type& point, value_type radius, size_t max_count = 0) {
-        std::vector<value_type> distances(max_count > 0 ? max_count : npoints);
-        return rnn(point, radius, distances, max_count);
+        std::vector<int> indices(max_count > 0 ? max_count : npoints);
+        std::vector<value_type> vpoint(point.begin(), point.end());
+        make_dump(max_count > 0 ? max_count : npoints, true);
+        int count = flannIndex->radiusSearch(vpoint, indices, distances_dump, radius, cvflann::SearchParams());
+        indices.resize(count);
+        return indices;
     }
 
     std::vector<int> rnn(const point_type& point, value_type radius, std::vector<value_type> &distances, size_t max_count = 0) {
@@ -71,4 +83,14 @@ public:
 private:
     size_t npoints;
     std::unique_ptr<cv::flann::GenericIndex<cvflann::L2<value_type>>> flannIndex;
+
+    void make_dump(size_t size, size_t mux = 1, bool forced = false) {
+        size *= mux;
+        if (distances_dump.size() < size || (distances_dump.size() > size && forced)) {
+            distances_dump.resize(size);
+            distances_data_dump = cv::Mat((int)mux, (int)(size/mux), cv::DataType<value_type>::type, (void*)distances_dump.data());
+        }
+    }
+    std::vector<value_type> distances_dump;
+    cv::Mat distances_data_dump;
 };
