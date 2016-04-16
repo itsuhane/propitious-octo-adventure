@@ -11,9 +11,7 @@ public:
 
     unique_timer(_Out out) : out(out) {}
     ~unique_timer() {
-        if (valid) {
-            out(duration());
-        }
+        end();
     }
 
     unique_timer &operator= (unique_timer&& right) {
@@ -29,6 +27,13 @@ public:
 
     typename duration_type::rep duration() {
         return std::chrono::duration_cast<duration_type>(clock_type::now() - time).count();
+    }
+
+    void end() {
+        if (valid) {
+            out(duration());
+            valid = false;
+        }
     }
 
     unique_timer& operator=(const unique_timer& right) = delete;
