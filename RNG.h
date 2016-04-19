@@ -117,6 +117,10 @@ public:
         }
     }
 
+    void refill_all() {
+        cap = 0;
+    }
+
     size_t remaining() const {
         return lots.size() - cap;
     }
