@@ -3,18 +3,16 @@
 // the PRNG module in C++ <random> needs too many setup code!
 
 #include <random>
+#include <type_traits>
 
 inline unsigned int get_random_seed() {
     static std::random_device rd;
     return rd();
 }
 
-template<typename T>
-class GaussianNoise {
+class _RandomBase {
 public:
-    typedef T value_type;
-
-    GaussianNoise(value_type sigma = value_type(1.0), value_type mean = value_type(0.0)) : distribution(mean, sigma) {
+    _RandomBase() {
         seed();
     }
 
@@ -26,17 +24,105 @@ public:
         engine.seed(value);
     }
 
+protected:
+    std::default_random_engine engine;
+};
+
+template <typename T>
+class UniformNoise : protected _RandomBase {
+public:
+    typedef T value_type;
+
+    UniformNoise(value_type left = value_type(0.0), value_type right = value_type(1.0)) : distribution(left, right) {}
+
     value_type next() {
         return distribution(engine);
     }
 
 private:
-    std::default_random_engine engine;
+    std::uniform_real_distribution<value_type> distribution;
+};
+
+template <typename T>
+class GaussianNoise : protected _RandomBase {
+public:
+    typedef T value_type;
+
+    GaussianNoise(value_type sigma = value_type(1.0), value_type mean = value_type(0.0)) : distribution(mean, sigma) {}
+
+    value_type next() {
+        return distribution(engine);
+    }
+private:
     std::normal_distribution<value_type> distribution;
 };
 
-/*
-GaussianNoise<double> rng(2.0);
-rng.seed(961216); // for deterministic randomness
-double v = rng.next();
-*/
+template <typename T>
+class UniformInteger : protected _RandomBase {
+public:
+    typedef T value_type;
+
+    // [left, right]
+    UniformInteger(value_type left = value_type(0), value_type right = std::numeric_limits<T>::max()) : distribution(left, right) {}
+
+    void param(value_type left, value_type right) {
+        distribution.param(std::uniform_int_distribution<value_type>::param_type(left, right));
+    }
+
+    value_type next() {
+        return distribution(engine);
+    }
+
+    value_type next(value_type left, value_type right) {
+        return distribution(engine, std::uniform_int_distribution<value_type>::param_type(left, right));
+    }
+private:
+    std::uniform_int_distribution<value_type> distribution;
+};
+
+class LotBox {
+public:
+    LotBox(size_t size) : cap(0), lots(size) {
+        std::iota(lots.begin(), lots.end(), 0);
+    }
+
+    size_t draw_with_replacement() {
+        size_t result = draw_without_replacement();
+        refill_last();
+        return result;
+    }
+
+    size_t draw_without_replacement() {
+        if (remaining() > 1) {
+            std::swap(lots[cap], lots[dice.next(cap, lots.size()-1)]);
+            size_t result = lots[cap];
+            cap++;
+            return result;
+        }
+        else if (remaining() == 1) {
+            cap++;
+            return lots.back();
+        }
+        else {
+            return size_t(-1); // Hey we have nothing left!
+        }
+    }
+
+    void refill_last(size_t n = 1) {
+        if (cap > n) {
+            cap -= n;
+        }
+        else {
+            cap = 0;
+        }
+    }
+
+    size_t remaining() const {
+        return lots.size() - cap;
+    }
+
+private:
+    size_t cap;
+    std::vector<size_t> lots;
+    UniformInteger<size_t> dice;
+};
