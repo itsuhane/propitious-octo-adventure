@@ -22,3 +22,14 @@ namespace Eigen {
         static inline Real dummy_precision() { return Real(NumTraits<Real>::dummy_precision()); }
     };
 }
+
+template<typename _Real, int _Rows, int _Cols>
+Eigen::Matrix<_Real, _Rows, _Cols> nabla(const jet<_Real> &f, const Eigen::Matrix<jet<_Real>, _Rows, _Cols> &x) {
+    Eigen::Matrix<_Real, _Rows, _Cols> result;
+    for (int c = 0; c < _Cols; ++c) {
+        for (int r = 0; r < _Rows; ++r) {
+            result(r, c) = f.partial(x(r, c));
+        }
+    }
+    return result;
+}
