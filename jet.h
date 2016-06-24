@@ -1,14 +1,15 @@
 #pragma once
 
 /*
-    jet.h - dual number for automatic differentiation
-    this is inspired by the Jet type in ceres-solver.
+jet.h - dual number for automatic differentiation
+this is inspired by the Jet type in ceres-solver.
 
-    this is a toy implementation, IT IS SLOW!
+this is a toy implementation, IT IS SLOW!
 */
 
 #include <cmath>
 #include <map>
+#include <ostream>
 
 template <typename T>
 class jet {
@@ -26,7 +27,11 @@ public:
         return jet(x, new_id());
     }
 
-    value_type value() const {
+    const value_type& value() const {
+        return x;
+    }
+
+    value_type& value() {
         return x;
     }
 
@@ -38,6 +43,8 @@ public:
             return 0;
         }
     }
+
+    jet& operator=(const jet &d) = default;
 
     jet operator-() const {
         jet result = *this;
@@ -114,14 +121,19 @@ public:
         return result;
     }
 
+    void push_forward(const value_type &s) {
+        for (auto &p : u) {
+            p.second *= s;
+        }
+    }
+
     template<typename T> friend jet<T> operator+(const T& x, const jet<T> &d);
     template<typename T> friend jet<T> operator-(const T& x, const jet<T> &d);
     template<typename T> friend jet<T> operator*(const T& x, const jet<T> &d);
     template<typename T> friend jet<T> operator/(const T& x, const jet<T> &d);
-    template<typename T> friend jet<T> abs(const jet<T> &d);
-    template<typename T> friend jet<T> sin(const jet<T> &d);
-    template<typename T> friend jet<T> cos(const jet<T> &d);
-    template<typename T> friend jet<T> log(const jet<T> &d);
+
+    template<typename CharT, typename Traits, typename T>
+    friend std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& s, const jet<T> &d);
 
 private:
     jet(const value_type &x, const guid_type &id) : x(x), id(id) {
@@ -166,37 +178,59 @@ jet<T> operator/(const T& x, const jet<T> &d) {
 
 template<typename T>
 jet<T> abs(const jet<T> &d) {
-    return (d.x < 0) ? (-d) : d;
+    return (d.value() < 0) ? (-d) : d;
 }
 
 template<typename T>
 jet<T> sin(const jet<T> &d) {
     jet<T> result = d;
-    result.x = sin(d.x);
-    T c = cos(d.x);
-    for (auto &p : result.u) {
-        p.second *= c;
-    }
+    result.value() = sin(d.value());
+    result.push_forward(cos(d.value()));
     return result;
 }
 
 template<typename T>
 jet<T> cos(const jet<T> &d) {
     jet<T> result = d;
-    result.x = cos(d.x);
-    T s = -sin(d.x);
-    for (auto &p : result.u) {
-        p.second *= s;
-    }
+    result.value() = cos(d.value());
+    result.push_forward(-sin(d.value()));
+    return result;
+}
+
+template<typename T>
+jet<T> tan(const jet<T> &d) {
+    jet<T> result = d;
+    result.value() = tan(d.value());
+    double sec = 1 / cos(d.value());
+    result.push_forward(sec*sec);
+    return result;
+}
+
+template<typename T>
+jet<T> exp(const jet<T> &d) {
+    jet<T> result = d;
+    result.value() = exp(d.value());
+    result.push_forward(result.value());
+    return result;
+}
+
+template<typename T>
+jet<T> sqrt(const jet<T> &d) {
+    jet<T> result = d;
+    result.value() = sqrt(d.value());
+    result.push_forward(T(0.5) / result.value());
     return result;
 }
 
 template<typename T>
 jet<T> log(const jet<T> &d) {
     jet<T> result = d;
-    result.x = log(d.x);
-    for (auto &p : result.u) {
-        p.second /= d.x;
-    }
+    result.value() = log(d.value());
+    result.push_forward(1 / d.value());
     return result;
+}
+
+template<typename CharT, typename Traits, typename T>
+std::basic_ostream<CharT, Traits> &operator<<(std::basic_ostream<CharT, Traits>& s, const jet<T> &d) {
+    return (s << d.value());
 }
