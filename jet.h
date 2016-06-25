@@ -13,18 +13,25 @@ this is a toy implementation, IT IS SLOW!
 
 template <typename T>
 class jet {
+    template<typename T> friend jet<T> operator+(const T& x, const jet<T> &d);
+    template<typename T> friend jet<T> operator-(const T& x, const jet<T> &d);
+    template<typename T> friend jet<T> operator*(const T& x, const jet<T> &d);
+    template<typename T> friend jet<T> operator/(const T& x, const jet<T> &d);
+
+    template<typename CharT, typename Traits, typename T>
+    friend std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& s, const jet<T> &d);
+
 public:
-    typedef size_t guid_type;
     typedef T value_type;
 
     jet() : jet(0) {}
-    jet(const value_type &x) : jet(x, 0) {}
+    jet(const value_type &x) : x(x), id(0) {}
 
     jet(const jet& d) = default;
     jet(jet&& d) : x(d.x), u(std::move(d.u)) {}
 
-    static jet variable(const value_type &x) {
-        return jet(x, new_id());
+    void make_variable() {
+        u[id = new_id()] = 1;
     }
 
     const value_type& value() const {
@@ -45,6 +52,11 @@ public:
     }
 
     jet& operator=(const jet &d) = default;
+
+    jet& operator=(const value_type &v) {
+        x = v;
+        return *this;
+    }
 
     jet operator-() const {
         jet result = *this;
@@ -127,33 +139,21 @@ public:
         }
     }
 
-    template<typename T> friend jet<T> operator+(const T& x, const jet<T> &d);
-    template<typename T> friend jet<T> operator-(const T& x, const jet<T> &d);
-    template<typename T> friend jet<T> operator*(const T& x, const jet<T> &d);
-    template<typename T> friend jet<T> operator/(const T& x, const jet<T> &d);
-
-    template<typename CharT, typename Traits, typename T>
-    friend std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& s, const jet<T> &d);
-
 private:
-    jet(const value_type &x, const guid_type &id) : x(x), id(id) {
-        if (id != 0) {
-            u[id] = 1;
-        }
-    }
+    typedef size_t uvid_type;
+    uvid_type id;
 
-    guid_type id;
-    value_type x;
-    std::map<guid_type, value_type> u;
-
-    static guid_type new_id() {
-        static guid_type current_id = 0;
+    static uvid_type new_id() {
+        static uvid_type current_id = 0;
         current_id++;
         //if (current_id == 0) {
         // TODO: id exhausted, throw exception
         //}
         return current_id;
     }
+
+    value_type x;
+    std::map<uvid_type, value_type> u;
 };
 
 template<typename T>
