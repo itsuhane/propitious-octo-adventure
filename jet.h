@@ -207,6 +207,43 @@ jet<T> tan(const jet<T> &d) {
 }
 
 template<typename T>
+jet<T> sinc(const jet<T> &d) {
+    static const T root1_eps = std::numeric_limits<T>::epsilon();
+    static const T root2_eps = sqrt(root1_eps);
+    static const T root3_eps = cbrt(root1_eps);
+    static const T root4_eps = sqrt(root2_eps);
+    jet<T> result = d;
+
+    const T &x = d.value();
+    T &rx = result.value();
+
+    T ax = abs(x);
+    T sx = sin(x);
+    T x2 = x*x;
+    T dx;
+
+    if (ax > root4_eps) {
+        rx = sx / x;
+        dx = (x*cos(x) - sx) / x2;
+    }
+    else {
+        rx = 1;
+        dx = -x / 3;
+        if (ax > root1_eps) {
+            rx -= x2 / 6;
+            if (ax > root2_eps) {
+                rx += (x2*x2) / 120;
+                dx += (x*x2) / 30;
+            }
+        }
+    }
+
+    result.push_forward(dx);
+
+    return result;
+}
+
+template<typename T>
 jet<T> exp(const jet<T> &d) {
     jet<T> result = d;
     result.value() = exp(d.value());
