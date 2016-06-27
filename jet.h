@@ -34,6 +34,12 @@ public:
         u[id = new_id()] = 1;
     }
 
+    jet as_value() const {
+        jet result = *this;
+        result.id = 0;
+        return result;
+    }
+
     const value_type& value() const {
         return x;
     }
@@ -131,6 +137,30 @@ public:
         jet result = *this;
         result /= d;
         return result;
+    }
+
+    bool operator<(const jet &d) const {
+        return x < d.x;
+    }
+
+    bool operator>(const jet &d) const {
+        return x > d.x;
+    }
+
+    bool operator<=(const jet &d) const {
+        return x <= d.x;
+    }
+
+    bool operator>=(const jet &d) const {
+        return x >= d.x;
+    }
+
+    bool operator==(const jet &d) const {
+        return x == d.x;
+    }
+
+    bool operator!=(const jet &d) const {
+        return x != d.x;
     }
 
     void push_forward(const value_type &s) {
@@ -271,3 +301,4 @@ template<typename CharT, typename Traits, typename T>
 std::basic_ostream<CharT, Traits> &operator<<(std::basic_ostream<CharT, Traits>& s, const jet<T> &d) {
     return (s << d.value());
 }
+

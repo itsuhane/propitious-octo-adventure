@@ -5,8 +5,10 @@
 
 namespace Eigen {
     template<typename _Real>
-    struct NumTraits<jet<_Real> > {
+    struct NumTraits<jet<_Real> > : GenericNumTraits<_Real> {
         typedef jet<_Real> Real;
+        typedef jet<_Real> NonInteger;
+        typedef jet<_Real> Nested;
         enum {
             IsComplex = 0,
             IsInteger = 0,
@@ -19,8 +21,37 @@ namespace Eigen {
         };
 
         static inline Real epsilon() { return Real(NumTraits<_Real>::epsilon()); }
-        static inline Real dummy_precision() { return Real(NumTraits<Real>::dummy_precision()); }
+        static inline Real dummy_precision() { return Real(NumTraits<_Real>::dummy_precision()); }
     };
+
+    namespace internal {
+
+        template<class Base>
+        struct significant_decimals_default_impl<jet<Base>, false>
+        {
+            typedef jet<Base> Scalar;
+            typedef typename NumTraits<Scalar>::Real RealScalar;
+
+            static inline int run()
+            {
+                Scalar neg_log_eps = -log(NumTraits<RealScalar>::epsilon());
+                int ceil_neg_log_eps = int(neg_log_eps.value());
+                return (Scalar(ceil_neg_log_eps) < neg_log_eps) ? (ceil_neg_log_eps + 1) : ceil_neg_log_eps;
+            }
+        };
+    }
+
+}
+
+template<typename _Real, int _Rows, int _Cols>
+Eigen::Matrix<_Real, _Rows, _Cols> partial(const Eigen::Matrix<jet<_Real>, _Rows, _Cols> &f, const jet<_Real> &x) {
+    Eigen::Matrix<_Real, _Rows, _Cols> result;
+    for (int c = 0; c < _Cols; ++c) {
+        for (int r = 0; r < _Rows; ++r) {
+            result(r, c) = f(r, c).partial(x);
+        }
+    }
+    return result;
 }
 
 template<typename _Real, int _Rows, int _Cols>
