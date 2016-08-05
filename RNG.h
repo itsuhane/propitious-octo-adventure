@@ -2,6 +2,7 @@
 
 // the PRNG module in C++ <random> needs too many setup code!
 
+#include <numeric>
 #include <random>
 #include <type_traits>
 
