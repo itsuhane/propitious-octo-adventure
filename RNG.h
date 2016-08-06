@@ -95,7 +95,7 @@ public:
 
     size_t draw_without_replacement() {
         if (remaining() > 1) {
-            std::swap(lots[cap], lots[dice.next(cap, lots.size()-1)]);
+            std::swap(lots[cap], lots[dice.next(cap, lots.size() - 1)]);
             size_t result = lots[cap];
             cap++;
             return result;
@@ -130,4 +130,61 @@ private:
     size_t cap;
     std::vector<size_t> lots;
     UniformInteger<size_t> dice;
+};
+
+template<typename T>
+class WhiteNoise {
+public:
+    typedef T value_type;
+    WhiteNoise(value_type sigma, value_type freq = 1, value_type mean = 0) : n(sigma, mean), isdt(sqrt(freq)) {}
+
+    void seed() {
+        n.seed();
+    }
+
+    void seed(unsigned int value) {
+        n.seed(value);
+    }
+
+    value_type next() {
+        return n.next()*isdt;
+    }
+
+private:
+    GaussianNoise<value_type> n;
+    double isdt;
+};
+
+template<typename T>
+class RandomWalk {
+public:
+    typedef T value_type;
+
+    RandomWalk(value_type sigma, value_type freq = 1, value_type init = 0, value_type bias = 0) : v(init), n(sigma, bias), sdt(sqrt(1/freq)) {}
+
+    void seed() {
+        n.seed();
+    }
+
+    void seed(unsigned int value) {
+        n.seed(value);
+    }
+
+    void init(const value_type &v) {
+        this->v = v;
+    }
+
+    value_type next() {
+        step();
+        return v;
+    }
+
+private:
+    void step() {
+        v += n.next()*sdt;
+    }
+
+    double v;
+    GaussianNoise<value_type> n;
+    double sdt;
 };
