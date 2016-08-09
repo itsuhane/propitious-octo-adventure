@@ -56,7 +56,7 @@ inline void ransac(Model &model, const std::vector<typename Model::point_type> &
 }
 
 template <typename Model>
-inline void  ransac(Model &model, const std::vector<typename Model::point_type> &points, double success_rate = 0.95, int max_iter = 20000000) {
+inline void ransac(Model &model, const std::vector<typename Model::point_type> &points, double success_rate = 0.95, int max_iter = 20000000) {
     std::vector<unsigned char> inliers;
     ransac(model, points, inliers, success_rate, max_iter);
 }
