@@ -1,22 +1,20 @@
 #pragma once
 
 #include <vector>
-#include <iostream>
 
 #include "RNG.h"
 
 /*
 struct Model {
-    typedef data_point_type point_type;
-    static const int n_fit;
-    bool fit(const std::vector<point_type> &points, const std::vector<unsigned char> &inlier_mask);
-    bool consensus(const point_type &point);
+typedef data_point_type point_type;
+static const int n_fit;
+bool fit(const std::vector<point_type> &points, const std::vector<unsigned char> &inlier_mask);
+bool consensus(const point_type &point);
 };
 */
 
 template <typename Model>
-inline Model ransac(const std::vector<typename Model::point_type> &points, std::vector<unsigned char>& inliers, double success_rate = 0.95, int max_iter = 20000000) {
-    Model model;
+inline void ransac(Model &model, const std::vector<typename Model::point_type> &points, std::vector<unsigned char>& inliers, double success_rate = 0.95, int max_iter = 20000000) {
     UniformInteger<size_t> rnd(0, points.size() - 1);
 
     int n_iter = 0;
@@ -55,12 +53,10 @@ inline Model ransac(const std::vector<typename Model::point_type> &points, std::
     }
 
     model.fit(points, inliers);
-
-    return model;
 }
 
 template <typename Model>
-inline Model ransac(const std::vector<typename Model::point_type> &points, double success_rate = 0.95, int max_iter = 20000000) {
+inline void  ransac(Model &model, const std::vector<typename Model::point_type> &points, double success_rate = 0.95, int max_iter = 20000000) {
     std::vector<unsigned char> inliers;
-    return ransac<Model>(points, inliers, success_rate, max_iter);
+    ransac(model, points, inliers, success_rate, max_iter);
 }
