@@ -4,15 +4,6 @@
 #include "skew_matrix.h"
 
 /*
-    When q = Rp+T maps coordinate from p in camera system 1 to q in camera system 2,
-    a plane has normal n (in camera system 1), and distance d to the origin of system 1.
-    ** R must be a proper rotation matrix.
-*/
-inline Eigen::Matrix3d compose_homography(const Eigen::Matrix3d &R, const Eigen::Vector3d &T, const Eigen::Vector3d &n, double d = 1.0) {
-    return R + (T / d)*n.transpose();
-}
-
-/*
     When q = Rp+T maps coordinate from p in camera system 1 to q in camera system 2.
     Gives the essential matrix that satisfy q^T*E*p = 0.
     ** R must be a proper rotation matrix.
@@ -28,8 +19,8 @@ inline bool fix_essential(const Eigen::Matrix3d &E, Eigen::Matrix3d &fixed_E) {
     Eigen::Vector3d fs{ 1.0, 1.0, 0.0 };
     Eigen::JacobiSVD<Eigen::Matrix3d> svd(E, Eigen::ComputeFullU | Eigen::ComputeFullV);
     Eigen::Vector3d s = svd.singularValues();
+    fixed_E = svd.matrixU()*fs.asDiagonal()*svd.matrixV().transpose();
     if (s[1] / s[0] > 0) {
-        fixed_E = svd.matrixU()*fs.asDiagonal()*svd.matrixV().transpose();
         return true;
     }
     else {
@@ -87,11 +78,6 @@ inline bool decompose_essential(const Eigen::Matrix3d &E, Eigen::Matrix3d &R1, E
     T2 = -b;
 
     return true;
-}
-
-inline bool decompose_homography(const Eigen::Matrix3d &H, Eigen::Matrix3d &R, Eigen::Vector3d &T, Eigen::Vector3d &n) {
-    // TODO
-    return false;
 }
 
 /*
