@@ -92,7 +92,7 @@ bool solve_homography_normalized(const std::vector<Eigen::Vector2d> &pa, const s
     }
 
     Eigen::MatrixXd A;
-    A.resize(pa.size() * 3, 9);
+    A.resize(pa.size() * 2, 9);
     A.setZero();
 
     for (size_t i = 0; i < pa.size(); ++i) {
