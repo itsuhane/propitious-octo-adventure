@@ -86,7 +86,7 @@ decompose_homography_continued:
 }
 
 
-bool solve_homography_normalized(const std::vector<Eigen::Vector2d> &pa, const std::vector<Eigen::Vector2d> &pb, Eigen::Matrix3d &H) {
+inline bool solve_homography_normalized(const std::vector<Eigen::Vector2d> &pa, const std::vector<Eigen::Vector2d> &pb, Eigen::Matrix3d &H) {
     if (pa.size() < 4 || pa.size() != pb.size()) {
         return false;
     }
@@ -118,7 +118,7 @@ bool solve_homography_normalized(const std::vector<Eigen::Vector2d> &pa, const s
     return true;
 }
 
-bool solve_homography(const std::vector<Eigen::Vector2d> &pa, const std::vector<Eigen::Vector2d> &pb, Eigen::Matrix3d &H) {
+inline bool solve_homography(const std::vector<Eigen::Vector2d> &pa, const std::vector<Eigen::Vector2d> &pb, Eigen::Matrix3d &H) {
     if (pa.size() < 4 || pa.size() != pb.size()) {
         return false;
     }
