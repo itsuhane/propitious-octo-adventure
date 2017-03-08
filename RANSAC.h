@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "RNG.h"
+#include "Random.h"
 
 /*
 struct Model {
