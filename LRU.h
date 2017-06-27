@@ -3,7 +3,6 @@
 #include <vector>
 #include <map>
 #include <functional>
-#include <iostream>
 
 template <typename Key, typename Val>
 class LRU {
