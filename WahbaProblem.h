@@ -4,7 +4,7 @@
 #include <Eigen/Eigen>
 
 inline Eigen::Matrix3d Kabsch(const std::vector<Eigen::Vector3d> &src, const std::vector<Eigen::Vector3d> &dst) {
-    Eigen::Matrix3d cov;
+    Eigen::Matrix3d cov = Eigen::Matrix3d::Zero();
     for (size_t i = 0; i < src.size(); ++i) {
         cov += src[i] * dst[i].transpose();
     }
