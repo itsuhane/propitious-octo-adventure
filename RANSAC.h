@@ -6,10 +6,10 @@
 
 /*
 struct Model {
-typedef data_point_type point_type;
-static const int n_fit;
-bool fit(const std::vector<point_type> &points, const std::vector<unsigned char> &inlier_mask);
-bool consensus(const point_type &point);
+    typedef data_point_type point_type;
+    static const int n_fit;
+    bool fit(const std::vector<point_type> &all_points, const std::vector<unsigned char> &sampling_mask);
+    bool consensus(const point_type &point);
 };
 */
 
