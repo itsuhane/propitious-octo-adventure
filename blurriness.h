@@ -32,6 +32,7 @@ float blurriness(const cv::Mat &grayimage) {
     w = F.cols;
     h = F.rows;
 
+#if 0
     Mat B_Ver, B_Hor;
     boxFilter(F, B_Ver, -1, Size(9, 1));
     boxFilter(F, B_Hor, -1, Size(1, 9));
@@ -54,6 +55,27 @@ float blurriness(const cv::Mat &grayimage) {
     float s_F_Hor = cv::sum(D_F_Hor)(0);
     float s_V_Ver = cv::sum(D_V_Ver)(0);
     float s_V_Hor = cv::sum(D_V_Hor)(0);
+#else
+    cv::Mat DF, BV;
+
+    absdiff(F(Rect(1, 0, w - 1, h)), F(Rect(0, 0, w - 1, h)), DF);
+    float s_F_Ver = cv::sum(DF)(0);
+
+    boxFilter(F, BV, -1, Size(9, 1));
+    absdiff(BV(Rect(1, 0, w - 1, h)), BV(Rect(0, 0, w - 1, h)), BV);
+    cv::threshold(DF - BV, BV, 0, 0, THRESH_TOZERO);
+    absdiff(BV(Rect(1, 0, w - 2, h)), BV(Rect(0, 0, w - 2, h)), BV);
+    float s_V_Ver = cv::sum(BV)(0);
+
+    absdiff(F(Rect(0, 1, w, h - 1)), F(Rect(0, 0, w, h - 1)), DF);
+    float s_F_Hor = cv::sum(DF)(0);
+
+    boxFilter(F, BV, -1, Size(1, 9));
+    absdiff(BV(Rect(0, 1, w, h - 1)), BV(Rect(0, 0, w, h - 1)), BV);
+    cv::threshold(DF - BV, BV, 0, 0, THRESH_TOZERO);
+    absdiff(BV(Rect(0, 1, w, h - 2)), BV(Rect(0, 0, w, h - 2)), BV);
+    float s_V_Hor = cv::sum(BV)(0);
+#endif
 
     float b_F_Ver = (s_F_Ver - s_V_Ver) / s_F_Ver;
     float b_F_Hor = (s_F_Hor - s_V_Hor) / s_F_Hor;
