@@ -5,7 +5,7 @@
 
 /*
 This piece of code implements the method described in following paper:
-    Fr®¶d®¶rique Cr®¶t®¶-Roffet, Thierry Dolmiere, Patricia Ladret, Marina Nicolas. The Blur Effect: Perception and Estimation with a New No-Reference Perceptual Blur Metric.
+    Fr√©d√©rique Cr√©t√©-Roffet, Thierry Dolmiere, Patricia Ladret, Marina Nicolas. The Blur Effect: Perception and Estimation with a New No-Reference Perceptual Blur Metric.
     SPIE Electronic Imaging Symposium Conf Human Vision and Electronic Imaging, Jan 2007, San Jose, United States. XII, pp.EI 6492-16, 2007.
     <hal-00232709>
 */
