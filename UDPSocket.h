@@ -5,6 +5,7 @@
 // http://gafferongames.com/networking-for-game-programmers/
 
 #include <sstream>
+#include <cerrno>
 
 #define PLATFORM_WINDOWS 1
 #define PLATFORM_MAC     2
@@ -24,7 +25,6 @@
 #   include <ws2tcpip.h>
 #   pragma comment(lib, "Ws2_32.lib")
 #else
-#   include <cerrno>
 #   include <arpa/inet.h>
 #   include <sys/socket.h>
 #   include <sys/types.h>
@@ -205,47 +205,110 @@ namespace udp {
 }
 
 /*
-    // Server example
-    #include <array>
-    #include <string>
-    #include <iostream>
-    #include <UDPSocket.h>
+// Server Example
+#include <array>
+#include <string>
+#include <iostream>
+#include <UDPSocket.h>
 
-    int main() {
-        udp::socket::startup();
-        udp::socket socket;
-        bool ret = socket.bind(udp::address(5911));
-        while (ret) {
-            udp::address address;
-            std::array<char, 256> buffer;
-            size_t recv_len = socket.recv(address, buffer.data(), buffer.size());
-            if (recv_len) {
-                std::string str(buffer.begin(), buffer.begin() + recv_len);
-                if (str == "<SHUTDOWN>") {
-                    break;
-                }
-                std::cout << "from " << address.to_string() << " => " << str << std::endl;
+int main() {
+    udp::socket::startup();
+    udp::socket socket;
+    bool ret = socket.bind(udp::address(5911));
+    while (ret) {
+        udp::address address;
+        std::array<char, 256> buffer;
+        size_t recv_len = socket.recv(address, buffer.data(), buffer.size());
+        if (recv_len) {
+            std::string str(buffer.begin(), buffer.begin() + recv_len);
+            if (str == "<SHUTDOWN>") {
+                break;
             }
+            std::cout << "from " << address.to_string() << " => " << str << std::endl;
         }
-        udp::socket::cleanup();
-        return 0;
     }
-*/
+    udp::socket::cleanup();
+    return 0;
+}
 
-/*
-    // Client example
-    #include <string>
-    #include <UDPSocket.h>
+// Client Example
+#include <string>
+#include <UDPSocket.h>
 
-    int main() {
-        std::string msg = "Hello, world!";
+int main() {
+    std::string msg = "Hello, world!";
 
-        udp::socket::startup();
-        udp::socket socket;
-        udp::address dest(127, 0, 0, 1, 5911);
-        socket.send(dest, msg.data(), msg.size());
-        socket.send(dest, "<SHUTDOWN>", 10);
-        udp::socket::cleanup();
-        return 0;
+    udp::socket::startup();
+    udp::socket socket;
+    udp::address dest(127, 0, 0, 1, 5911);
+    socket.send(dest, msg.data(), msg.size());
+    socket.send(dest, "<SHUTDOWN>", 10);
+    udp::socket::cleanup();
+    return 0;
+}
+
+// Multicast Server Example
+#include <thread>
+#include <chrono>
+#include <iostream>
+
+#include "udpsocket.h"
+
+#include <assert.h>
+
+int main() {
+    udp::socket::startup();
+
+    udp::socket socket;
+
+    udp::address multicast_addr("226.0.0.80", 8001); // <-- send directly to address:port
+
+
+    for (int counter = 0; counter < 65536; ++counter) {
+        using namespace std::chrono_literals;
+        std::this_thread::sleep_for(1s);
+        std::string msg = "multicast message #" + std::to_string(counter);
+        if (socket.send(multicast_addr, msg.data(), msg.size())) {
+            std::cout << "sent: " << msg << std::endl;
+        }
     }
+
+    udp::socket::cleanup();
+    return 0;
+}
+
+// Multicast Client Example
+#include <array>
+#include <thread>
+#include <chrono>
+#include <iostream>
+
+#include "udpsocket.h"
+
+#include <assert.h>
+
+int main() {
+    udp::socket::startup();
+
+    udp::socket socket;
+
+    udp::address multicast_port(8001), multicast_addr("226.0.0.80", 0);
+    socket.bind(multicast_port);          // <-- receiver has to bind to port first
+    socket.add_multicast(multicast_addr); // <-- then join multicast group
+
+    while (1) {
+        using namespace std::chrono_literals;
+        std::this_thread::sleep_for(100ms);
+        udp::address from_addr;
+        std::array<char, 256> data_buf;
+        size_t data_len = socket.recv(from_addr, (void*)data_buf.data(), data_buf.size());
+        if (data_len > 0) {
+            std::string data_str(data_buf.begin(), data_buf.begin() + data_len);
+            std::cout << "recv from " << from_addr.to_string() << ": " << data_str << std::endl;
+        }
+    }
+
+    udp::socket::cleanup();
+    return 0;
+}
 */
