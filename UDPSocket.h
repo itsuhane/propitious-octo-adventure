@@ -5,7 +5,6 @@
 // http://gafferongames.com/networking-for-game-programmers/
 
 #include <sstream>
-#include <cerrno>
 
 #define PLATFORM_WINDOWS 1
 #define PLATFORM_MAC     2
@@ -25,6 +24,7 @@
 #   include <ws2tcpip.h>
 #   pragma comment(lib, "Ws2_32.lib")
 #else
+#   include <cerrno>
 #   include <arpa/inet.h>
 #   include <sys/socket.h>
 #   include <sys/types.h>
