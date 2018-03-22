@@ -24,9 +24,17 @@
 #   include <ws2tcpip.h>
 #   pragma comment(lib, "Ws2_32.lib")
 #else
+#   include <cerrno>
+#   include <arpa/inet.h>
 #   include <sys/socket.h>
+#   include <sys/types.h>
 #   include <netinet/in.h>
 #   include <fcntl.h>
+#   include <netdb.h>
+#   include <unistd.h>
+#   define SOCKET int
+#   define SOCKET_ERROR   -1
+#   define INVALID_SOCKET -1
 #endif
 
 namespace udp {
@@ -152,15 +160,43 @@ namespace udp {
             socklen_t addlen = sizeof(sockaddr_in);
             int recvlen = ::recvfrom(m_socket, (char*)data, (int)maxlen, 0, (sockaddr*)&from.m_address, &addlen);
             if (recvlen == SOCKET_ERROR) {
+#if PLATFORM == PLATFORM_WINDOWS
                 if (::WSAGetLastError() == WSAEWOULDBLOCK) {
+#else
+                if(errno == EWOULDBLOCK || errno == EAGAIN) {
+#endif
                     recvlen = 0;
                 }
                 else {
                     recvlen = 0;
-                    //throw "Error receiving data!";
+                    throw "Error receiving data.";
                 }
             }
             return (size_t)recvlen;
+        }
+
+        void add_multicast(const address &addr) {
+            ip_mreq ipmr;
+            ipmr.imr_multiaddr.s_addr = addr.m_address.sin_addr.s_addr;
+            ipmr.imr_interface.s_addr = htonl(INADDR_ANY);
+            int ret = ::setsockopt(m_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&ipmr, sizeof(ip_mreq));
+            if (ret == SOCKET_ERROR) {
+                throw "Add membership failed.";
+            }
+        }
+
+        void drop_multicast(const address &addr) {
+            ip_mreq ipmr;
+            ipmr.imr_multiaddr.s_addr = addr.m_address.sin_addr.s_addr;
+            ipmr.imr_interface.s_addr = htonl(INADDR_ANY);
+            int ret = ::setsockopt(m_socket, IPPROTO_IP, IP_DROP_MEMBERSHIP, (char*)&ipmr, sizeof(ip_mreq));
+            if (ret == SOCKET_ERROR) {
+                throw "Drop membership failed.";
+            }
+        }
+
+        SOCKET raw_socket() const {
+            return m_socket;
         }
 
     private:
