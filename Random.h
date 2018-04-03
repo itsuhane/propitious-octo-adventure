@@ -75,7 +75,7 @@ public:
     }
 
     value_type next(value_type left, value_type right) {
-        return distribution(engine, std::uniform_int_distribution<value_type>::param_type(left, right));
+        return distribution(engine, typename std::uniform_int_distribution<value_type>::param_type(left, right));
     }
 private:
     std::uniform_int_distribution<value_type> distribution;
