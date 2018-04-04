@@ -11,3 +11,4 @@ Usually, a well engineered version is available somewhere on the internet. googl
 Update:
 - why these code?
   - C++ dependencies are truly annoying...
+    - Not any more, checkout https://github.com/Microsoft/vcpkg
