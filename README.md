@@ -1,4 +1,6 @@
 # propitious-octo-adventure
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fitsuhane%2Fpropitious-octo-adventure.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fitsuhane%2Fpropitious-octo-adventure?ref=badge_shield)
+
 Just some code
 
 I usually come across some interesting ideas during work.
@@ -12,3 +14,7 @@ Update:
 - why these code?
   - C++ dependencies are truly annoying...
     - Not any more, checkout https://github.com/Microsoft/vcpkg
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fitsuhane%2Fpropitious-octo-adventure.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fitsuhane%2Fpropitious-octo-adventure?ref=badge_large)
